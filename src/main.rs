@@ -167,9 +167,12 @@ impl ServerStatusCommand {
 
         response.push_bold_line(format!("Server Status for {}:", server.name));
 
+        // TODO: Fix "map not found" bug
         response
             .push_bold("Map: ")
-            .push_line(format!("{}", server.map))
+            .push_line(format!("{}", server.map));
+
+        response
             .push_bold("Players: ")
             .push_line(format!("{}/{}", server.players, server.max_players))
             .push_bold("Connect: ");
