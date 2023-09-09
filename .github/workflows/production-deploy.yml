@@ -1,0 +1,22 @@
+name: Shuttle Deploy
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: shuttle-hq/deploy-action@main
+        with:
+          deploy-key: ${{ secrets.SHUTTLE__KEY }}
+          cargo-shuttle-version: ${{ vars.SHUTTLE_VERSION }}
+          secrets: |
+            DISCORD_TOKEN = '${{ secrets.DISCORD_TOKEN }}'
+            STEAM_API_KEY = '${{ secrets.STEAM_API_KEY }}'
+            OWNER_GUILD_ID = '${{ secrets.ATT_GUILD_ID }}'
+            ARMA_SERVERS = '${{ vars.ARMA_SERVERS }}'
