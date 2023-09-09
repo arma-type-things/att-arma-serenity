@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: shuttle-hq/deploy-action@main
         with:
-          deploy-key: ${{ secrets.SHUTTLE__KEY }}
+          deploy-key: ${{ secrets.SHUTTLE_API_KEY }}
           cargo-shuttle-version: ${{ vars.SHUTTLE_VERSION }}
           secrets: |
             DISCORD_TOKEN = '${{ secrets.DISCORD_TOKEN }}'
