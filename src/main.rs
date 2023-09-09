@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use serenity::async_trait;
-use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::prelude::{GuildId, Interaction, InteractionResponseType};
 use serenity::prelude::*;
@@ -14,30 +13,23 @@ use serenity::model::prelude::application_command::CommandDataOption;
 use serenity::utils::MessageBuilder;
 use tokio::time::sleep;
 
+use libsql_client::client::Client as SqlClient;
+
 struct Bot {
     steam_api_key: String,
     owner_guild_id: u64,
     arma_servers: Vec<String>,
+    turso_client: SqlClient,
 }
 
 #[async_trait]
 impl EventHandler for Bot {
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == "!hello" {
-            if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
-                error!("Error sending message: {:?}", e);
-            }
-        }
-    }
-
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
         let guild_id = GuildId(self.owner_guild_id);
 
         let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| {
-                command.name("status").description("A status command")
-            })
+            commands.create_application_command(|command| ServerStatusCommand::register(command))
         })
         .await
         .unwrap();
@@ -78,6 +70,8 @@ impl EventHandler for Bot {
 
 #[shuttle_runtime::main]
 async fn serenity(
+    #[shuttle_turso::Turso(addr = "{secrets.DB_TURSO_ADDR}", token = "{secrets.DB_TURSO_TOKEN}")]
+    turso_client: SqlClient,
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
@@ -113,6 +107,7 @@ async fn serenity(
             steam_api_key,
             owner_guild_id,
             arma_servers,
+            turso_client,
         })
         .await
         .expect("Err creating client");
@@ -177,9 +172,12 @@ impl ServerStatusCommand {
 
         response.push_bold_line(format!("Server Status for {}:", server.name));
 
+        // TODO: Fix "map not found" bug
         response
             .push_bold("Map: ")
-            .push_line(format!("{}", server.map))
+            .push_line(format!("{}", server.map));
+
+        response
             .push_bold("Players: ")
             .push_line(format!("{}/{}", server.players, server.max_players))
             .push_bold("Connect: ");

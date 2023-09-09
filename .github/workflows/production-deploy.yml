@@ -20,3 +20,5 @@ jobs:
             STEAM_API_KEY = '${{ secrets.STEAM_API_KEY }}'
             OWNER_GUILD_ID = '${{ secrets.ATT_GUILD_ID }}'
             ARMA_SERVERS = '${{ vars.ARMA_SERVERS }}'
+            DB_TURSO_ADDR = '${{ secrets.DB_TURSO_ADDR }}'
+            DB_TURSO_TOKEN = '${{ secrets.DB_TURSO_TOKEN }}'
