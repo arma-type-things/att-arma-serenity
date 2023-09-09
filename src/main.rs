@@ -35,9 +35,7 @@ impl EventHandler for Bot {
         let guild_id = GuildId(self.owner_guild_id);
 
         let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| {
-                command.name("status").description("A status command")
-            })
+            commands.create_application_command(|command| ServerStatusCommand::register(command))
         })
         .await
         .unwrap();
