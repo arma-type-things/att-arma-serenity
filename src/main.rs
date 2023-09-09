@@ -182,11 +182,12 @@ impl ServerStatusCommand {
             .push_line(format!("{}", server.map))
             .push_bold("Players: ")
             .push_line(format!("{}/{}", server.players, server.max_players))
-            .push_bold("Connect: ")
-            .push_line(format!(
-                "steam://connect/{}:{}",
-                server.addr, server.gameport
-            ));
+            .push_bold("Connect: ");
+        let address = server.addr.split(":").collect::<Vec<&str>>();
+        response.push_line(format!(
+            "steam://connect/{}:{}",
+            address[0], server.gameport
+        ));
     }
 }
 
