@@ -22,6 +22,7 @@ use serenity::{
 use shuttle_secrets::SecretStore;
 // Turso
 use libsql_client::client::Client as SqlClient;
+use serenity::http::CacheHttp;
 
 struct Bot {
     steam_api_key: String,
@@ -52,10 +53,13 @@ impl EventHandler for Bot {
         if let Interaction::ApplicationCommand(command) = interaction {
             let response_content = match command.data.name.as_str() {
                 "status" => {
+                    // let channel_id = command.channel_id;
                     commands::ServerStatusCommand::run(
                         &command.data.options,
                         self.steam_api_key.to_owned(),
                         self.arma_servers.to_owned(),
+                        // channel_id,
+                        // ctx.to_owned()
                     )
                     .await
                 }
@@ -129,13 +133,13 @@ fn check_environment(secret_store: SecretStore) -> Result<(String, String, u64, 
         return Err(anyhow!("'STEAM_API_KEY' was not found").into());
     };
 
-    owner_guild_id: u64 = if let Some(guild_id) = secret_store.get("OWNER_GUILD_ID") {
+    owner_guild_id = if let Some(guild_id) = secret_store.get("OWNER_GUILD_ID") {
         guild_id.parse().unwrap()
     } else {
         return Err(anyhow!("'OWNER_GUILD_ID' was not found").into());
     };
 
-    arma_servers: Vec<String> = if let Some(arma_servers) = secret_store.get("ARMA_SERVERS") {
+    arma_servers = if let Some(arma_servers) = secret_store.get("ARMA_SERVERS") {
         arma_servers.split(',').map(|s| s.to_owned()).collect()
     } else {
         return Err(anyhow!("'ARMA_SERVERS' was not found").into());

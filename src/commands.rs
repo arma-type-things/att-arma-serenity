@@ -10,16 +10,59 @@ use serenity::{
 // Utility
 use serde::Deserialize;
 use std::time::Duration;
+use serenity::model::prelude::ChannelId;
 use tokio::time::sleep;
 
 pub struct ServerStatusCommand;
 
+// fn push_server_details(response: &mut MessageBuilder, server: &SteamServer) {
+//     info!("Pushing response server details for: {:?}", server);
+//
+//     response.push_bold_line(format!("Server Status for {}:", server.name));
+//
+//     // TODO: Fix "map not found" bug
+//     response
+//         .push_bold("Map: ")
+//         .push_line(format!("{}", server.map));
+//
+//     response
+//         .push_bold("Players: ")
+//         .push_line(format!("{}/{}", server.players, server.max_players))
+//         .push_bold("Connect: ");
+//     let address = server.addr.split(":").collect::<Vec<&str>>();
+//     response.push_line(format!(
+//         "steam://connect/{}:{}",
+//         address[0], server.gameport
+//     ));
+// }
 impl ServerStatusCommand {
     pub async fn run(
         _options: &[CommandDataOption],
         steam_key: String,
         servers: Vec<String>,
+        // response_channel_id: ChannelId,
+        // ctx: Context,
     ) -> String {
+
+        // let _ = response_channel_id.send_message(&ctx.http, |m| {
+        //     m.content("Sure!");
+        //     for server in servers {
+        //         m.add_embed(|e| {
+        //             e.title("Server Status")
+        //                 .description("Querying the server to get status.")
+        //                 .field("Server", server.name, true);
+        //
+        //             if !server.map.is_empty() {
+        //                 e.field("Map", server.map, true)
+        //             }
+        //             let address = server.addr.split(":").collect::<Vec<&str>>();
+        //             e.field("Players", format!("{}/{}", server.players, server.max_players), true)
+        //                 .field("Connect", format!("steam://connect/{}:{}", address[0], server.gameport), true)
+        //         })
+        //     }
+        //     m
+        // }).await;
+
         let mut response = MessageBuilder::new();
 
         response.push_line("Sure!");
