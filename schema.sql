@@ -9,3 +9,9 @@ CREATE TABLE IF NOT EXISTS arma_servers (
     `addr` varchar(255) NOT NULL,
     FOREIGN KEY (guild_id) REFERENCES discord_guild(guild_id)
     );
+
+CREATE TABLE IF NOT EXISTS broadcast_targets (
+    `guild_id` INTEGER NOT NULL,
+    `channel_id` INTEGER NOT NULL,
+    FOREIGN KEY (guild_id) REFERENCES discord_guild(guild_id)
+    );
