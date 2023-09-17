@@ -23,6 +23,7 @@ use shuttle_secrets::SecretStore;
 // Turso
 use libsql_client::client::Client as SqlClient;
 use serenity::http::CacheHttp;
+use serenity::model::guild::ScheduledEvent;
 
 struct Bot {
     steam_api_key: String,
@@ -30,6 +31,10 @@ struct Bot {
     arma_servers: Vec<String>,
     turso_client: SqlClient,
 }
+
+// TODO: make these fetched from the database
+const TEST_CHANNEL_ID: u64 = 1021230323247349902;
+const EVENT_FEED_ID: u64 = 1151219763549327471;
 
 #[async_trait]
 impl EventHandler for Bot {
@@ -77,6 +82,10 @@ impl EventHandler for Bot {
                 error!("Cannot respond to slash command: {:?}", why);
             }
         }
+    }
+
+    async fn guild_scheduled_event_create(&self, _ctx: Context, _event: ScheduledEvent) {
+        todo!()
     }
 }
 
