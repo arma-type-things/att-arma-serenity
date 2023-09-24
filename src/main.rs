@@ -13,13 +13,13 @@ use serenity::model::prelude::application_command::CommandDataOption;
 use serenity::utils::MessageBuilder;
 use tokio::time::sleep;
 
-use libsql_client::client::Client as SqlClient;
+// use libsql_client::client::Client as SqlClient;
 
 struct Bot {
     steam_api_key: String,
     owner_guild_id: u64,
     arma_servers: Vec<String>,
-    turso_client: SqlClient,
+    // turso_client: SqlClient,
 }
 
 #[async_trait]
@@ -70,8 +70,8 @@ impl EventHandler for Bot {
 
 #[shuttle_runtime::main]
 async fn serenity(
-    #[shuttle_turso::Turso(addr = "{secrets.DB_TURSO_ADDR}", token = "{secrets.DB_TURSO_TOKEN}")]
-    turso_client: SqlClient,
+    // #[shuttle_turso::Turso(addr = "{secrets.DB_TURSO_ADDR}", token = "{secrets.DB_TURSO_TOKEN}")]
+    // turso_client: SqlClient,
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
@@ -107,7 +107,7 @@ async fn serenity(
             steam_api_key,
             owner_guild_id,
             arma_servers,
-            turso_client,
+            // turso_client,
         })
         .await
         .expect("Err creating client");
