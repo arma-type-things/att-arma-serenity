@@ -1,16 +1,16 @@
-// use tracing::error;
-use tracing::info;
+// Error handling / trace logging
+use tracing::{error, info};
 
 // Serenity
 use serenity::{
     builder::CreateApplicationCommand, model::prelude::application_command::CommandDataOption,
-    utils::MessageBuilder,
+    prelude::*, utils::MessageBuilder,
 };
 
 // Utility
 use serde::Deserialize;
 use std::time::Duration;
-// use serenity::model::prelude::ChannelId;
+use serenity::model::prelude::ChannelId;
 use tokio::time::sleep;
 
 pub struct ServerStatusCommand;
