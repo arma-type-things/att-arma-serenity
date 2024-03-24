@@ -3,7 +3,6 @@ use serenity::async_trait;
 use serenity::model::gateway::Ready;
 use serenity::model::prelude::{GuildId, Interaction};
 use serenity::prelude::*;
-use shuttle_secrets::SecretStore;
 use std::time::Duration;
 use tracing::{error, info};
 
@@ -13,13 +12,10 @@ use serenity::builder::CreateCommand;
 use serenity::utils::MessageBuilder;
 use tokio::time::sleep;
 
-// use libsql_client::client::Client as SqlClient;
-
 struct Bot {
     steam_api_key: String,
     owner_guild_id: u64,
     arma_servers: Vec<String>,
-    // turso_client: SqlClient,
 }
 
 #[async_trait]
@@ -27,12 +23,12 @@ impl EventHandler for Bot {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
         let guild_id = GuildId::new(self.owner_guild_id);
-        
+
         let command_builder = CreateCommand::new("status")
             .description("Query the server to list all running instances.")
             .kind(CommandType::ChatInput);
         let command = guild_id.create_command(&ctx.http, command_builder).await.unwrap();
-        
+
         info!(
             "Successfully registered application commands: {:#?}",
             command
@@ -55,7 +51,7 @@ impl EventHandler for Bot {
 
             let response_build = CreateInteractionResponse::Message(CreateInteractionResponseMessage::new()
                 .content(response_content));
-            
+
             if let Err(why) = command.create_response(&ctx.http, response_build).await {
                 error!("Cannot respond to slash command: {:?}", why);
             }
@@ -65,7 +61,7 @@ impl EventHandler for Bot {
 
 #[shuttle_runtime::main]
 async fn serenity(
-    #[shuttle_runtime::Secrets] secret_store: SecretStore,
+    #[shuttle_runtime::Secrets] secret_store: shuttle_runtime::SecretStore
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
