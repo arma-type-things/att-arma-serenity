@@ -1,47 +1,42 @@
 use anyhow::anyhow;
 use serenity::async_trait;
 use serenity::model::gateway::Ready;
-use serenity::model::prelude::{GuildId, Interaction, InteractionResponseType};
+use serenity::model::prelude::{GuildId, Interaction};
 use serenity::prelude::*;
-use shuttle_secrets::SecretStore;
 use std::time::Duration;
 use tracing::{error, info};
 
 use serde::Deserialize;
-use serenity::builder::CreateApplicationCommand;
-use serenity::model::prelude::application_command::CommandDataOption;
+use serenity::all::{CommandDataOption, CommandType, CreateInteractionResponse, CreateInteractionResponseMessage};
+use serenity::builder::CreateCommand;
 use serenity::utils::MessageBuilder;
 use tokio::time::sleep;
-
-// use libsql_client::client::Client as SqlClient;
 
 struct Bot {
     steam_api_key: String,
     owner_guild_id: u64,
     arma_servers: Vec<String>,
-    // turso_client: SqlClient,
 }
 
 #[async_trait]
 impl EventHandler for Bot {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
-        let guild_id = GuildId(self.owner_guild_id);
+        let guild_id = GuildId::new(self.owner_guild_id);
 
-        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| ServerStatusCommand::register(command))
-        })
-        .await
-        .unwrap();
+        let command_builder = CreateCommand::new("status")
+            .description("Query the server to list all running instances.")
+            .kind(CommandType::ChatInput);
+        let command = guild_id.create_command(&ctx.http, command_builder).await.unwrap();
 
         info!(
             "Successfully registered application commands: {:#?}",
-            commands
+            command
         );
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(command) = interaction {
+        if let Interaction::Command(command) = interaction {
             let response_content = match command.data.name.as_str() {
                 "status" => {
                     ServerStatusCommand::run(
@@ -54,14 +49,10 @@ impl EventHandler for Bot {
                 command => unreachable!("Unknown command: {}", command),
             };
 
-            let create_interaction_response =
-                command.create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content(response_content))
-                });
+            let response_build = CreateInteractionResponse::Message(CreateInteractionResponseMessage::new()
+                .content(response_content));
 
-            if let Err(why) = create_interaction_response.await {
+            if let Err(why) = command.create_response(&ctx.http, response_build).await {
                 error!("Cannot respond to slash command: {:?}", why);
             }
         }
@@ -70,9 +61,7 @@ impl EventHandler for Bot {
 
 #[shuttle_runtime::main]
 async fn serenity(
-    // #[shuttle_turso::Turso(addr = "{secrets.DB_TURSO_ADDR}", token = "{secrets.DB_TURSO_TOKEN}")]
-    // turso_client: SqlClient,
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+    #[shuttle_runtime::Secrets] secret_store: shuttle_runtime::SecretStore
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
@@ -145,15 +134,11 @@ impl ServerStatusCommand {
                     response.push_line(format!("Error grabbing details for {}: {}", server, why));
                 }
             };
-            let _ = sleep(Duration::from_millis(50));
+            let _ = sleep(Duration::from_millis(50)).await;
         }
         response.build()
     }
-    pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-        command
-            .name("status")
-            .description("Query the server to list all running instances.")
-    }
+
     async fn fetch_steam_data(
         api_key: &str,
         server_details: &str,
